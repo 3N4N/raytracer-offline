@@ -9,6 +9,8 @@ struct vector2d
 struct vector3d
 {
     double x,y,z;
+    vector3d() { }
+    vector3d(double x, double y, double z) : x(x), y(y), z(z) { }
 };
 
 vector2d cross_product(vector2d a, vector2d b);

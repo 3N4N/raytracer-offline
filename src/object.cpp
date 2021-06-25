@@ -10,26 +10,6 @@
 
 Object::Object() { }
 
-Object::Object(double x, double y, double z,
-               double r, double g, double b,
-               int shine, double ambient, double diffuse,
-               double specular, double recursive)
-{
-    ref_point.x = x;
-    ref_point.y = y;
-    ref_point.z = z;
-
-    setColor(r, g, b);
-    setShine(shine);
-    setCoeff(ambient, diffuse, specular, recursive);
-}
-
-Object::Object(vector3d ref, double r, double g, double b,
-               int shine, double ambient, double diffuse,
-               double specular, double recursive)
-    : Object(ref.x, ref.y, ref.z, r, g, b,
-             shine, ambient, diffuse, specular, recursive) { }
-
 Object::Object(double r, double g, double b,
                int shine, double ambient, double diffuse,
                double specular, double recursive)
@@ -72,22 +52,20 @@ Sphere::Sphere(double x, double y, double z, double radius,
                double r, double g, double b,
                int shine, double ambient, double diffuse,
                double specular, double recursive)
-    :
-    Object(x, y, z, r, g, b, shine, ambient, diffuse, specular, recursive),
-    radius(radius) { }
+    : Object(r, g, b, shine, ambient, diffuse, specular, recursive),
+    center(vector3d(x,y,z)), radius(radius) { }
 
 Sphere::Sphere(vector3d center, double radius,
                double r, double g, double b,
                int shine, double ambient, double diffuse,
                double specular, double recursive)
-    :
-    Sphere(center.x, center.y, center.z, radius, r, g, b,
-           shine, ambient, diffuse, specular, recursive) { }
+    : Sphere(center.x, center.y, center.z, radius, r, g, b,
+             shine, ambient, diffuse, specular, recursive) { }
 
 void Sphere::draw()
 {
     glPushMatrix();
-    glTranslated(ref_point.x, ref_point.y, ref_point.z);
+    glTranslated(center.x, center.y, center.z);
 
     struct vector3d points[100][100];
     int i, j;
@@ -164,22 +142,26 @@ void Triangle::draw()
  ******************************* Class Floor ********************************
  ****************************************************************************/
 
-Floor::Floor() : Object(0.0,0.0,0.0, 0,0,0, 0, 0.3,0.3,0.0,0.3) { }
+Floor::Floor() : Object(0,0,0, 0, 0.3,0.3,0.0,0.3) { }
+
+Floor::Floor(int floor_width, int tile_width)
+    : Object(0,0,0, 0, 0.3,0.3,0.0,0.3),
+    floor_width(floor_width), tile_width(tile_width) { }
 
 void Floor::draw()
 {
     // https://community.khronos.org/t/draw-a-checker-floor/54183/4
 
     glBegin(GL_QUADS); {
-        for (int i = -50; i < 50; i++) {
-            for (int j = -50; j < 50; j++) {
+        for (int i = -floor_width/2; i < floor_width/2; i++) {
+            for (int j = -floor_width/2; j < floor_width/2; j++) {
                 if ((i + j) % 2 == 0) glColor3f(1, 1, 1);
                 else glColor3f(0, 0, 0);
 
-                glVertex3f(i*20,        j*20,       0);
-                glVertex3f((i+1)*20,    j*20,       0);
-                glVertex3f((i+1)*20,    j*20+20,    0);
-                glVertex3f(i*20,        j*20+20,    0);
+                glVertex3f(i*tile_width,        j*tile_width,       0);
+                glVertex3f((i+1)*tile_width,    j*tile_width,       0);
+                glVertex3f((i+1)*tile_width,    (j+1)*tile_width,   0);
+                glVertex3f(i*tile_width,        (j+1)*tile_width,   0);
             }
         }
     } glEnd();

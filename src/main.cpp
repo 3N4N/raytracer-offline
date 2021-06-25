@@ -297,7 +297,7 @@ void init()
 
 int main(int argc, char **argv)
 {
-    objects.push_back(new Floor());
+    objects.push_back(new Floor(1000, 20));
     loadData();
 
     glutInit(&argc,argv);

@@ -8,22 +8,13 @@
 
 class Object {
 public:
-    vector3d ref_point;
-    double height, width, length;
     double color[3];
     double coeff[4]; // reflection coefficients
     int shine; // exponent term of specular component
 
     Object();
-    Object(double x, double y, double z,
-           double r, double g, double b,
-           int shine, double ambient, double diffuse,
-           double specular, double recursive);
-    Object(vector3d ref, double r, double g, double b,
-           int shine, double ambient, double diffuse,
-           double specular, double recursive);
-    Object(double r, double g, double b,
-           int shine, double ambient, double diffuse,
+    Object(double r, double g, double b, int shine,
+           double ambient, double diffuse,
            double specular, double recursive);
     ~Object();
     virtual void draw() = 0;
@@ -34,6 +25,7 @@ public:
 
 class Sphere: public Object {
 public:
+    vector3d center;
     double radius;
 
     Sphere(): Object() { }
@@ -64,7 +56,10 @@ public:
 
 class Floor: public Object {
 public:
+    int floor_width, tile_width;
+
     Floor();
+    Floor(int floor_width, int tile_width);
     void draw();
 };
 
