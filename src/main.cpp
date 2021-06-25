@@ -4,6 +4,7 @@
 #include <GL/glut.h>
 
 #include "object.h"
+#include "light.h"
 
 
 
@@ -15,6 +16,7 @@ int recursion_depth;
 int screen_size;
 int n_obj;
 vector<Object *> objects;
+vector<Light> lights;
 
 
 
@@ -25,7 +27,6 @@ void loadData()
 
     scenefile >> recursion_depth >> screen_size;
     scenefile >> n_obj;
-    cout << recursion_depth <<" "<< screen_size <<" "<< n_obj <<"\n";
 
     Object *obj;
 
@@ -80,6 +81,16 @@ void loadData()
             scenefile >> ambient >> diffuse >> specular >> recursive;
             scenefile >> shine;
         }
+    }
+
+    int n_light;
+    scenefile >> n_light;
+    while (n_light--) {
+        double x, y, z;
+        double r, g, b;
+        scenefile >> x >> y >> z;
+        scenefile >> r >> g >> b;
+        lights.push_back(Light(x,y,z, r,g,b));
     }
 
     scenefile.close();
