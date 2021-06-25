@@ -255,6 +255,8 @@ void display()
     / Add your objects from here
     ****************************/
 
+    for (const auto &object : objects) object->draw();
+
 
     // ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
     glutSwapBuffers();
@@ -295,6 +297,7 @@ void init()
 
 int main(int argc, char **argv)
 {
+    objects.push_back(new Floor());
     loadData();
 
     glutInit(&argc,argv);

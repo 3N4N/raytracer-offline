@@ -1,7 +1,10 @@
 #ifndef _OBJECTS_H_
 #define _OBJECTS_H_
 
+#include <GL/glut.h>
+#include <cmath>
 #include "vector.h"
+
 
 class Object {
 public:
@@ -23,7 +26,7 @@ public:
            int shine, double ambient, double diffuse,
            double specular, double recursive);
     ~Object();
-    // virtual void draw() = 0;
+    virtual void draw() = 0;
     void setColor(double, double, double);
     void setShine(int);
     void setCoeff(double, double, double, double);
@@ -42,6 +45,7 @@ public:
            double r, double g, double b,
            int shine, double ambient, double diffuse,
            double specular, double recursive);
+    void draw();
 };
 
 class Triangle: public Object {
@@ -55,6 +59,13 @@ public:
              double r, double g, double b,
              int shine, double ambient, double diffuse,
              double specular, double recursive);
+    void draw();
+};
+
+class Floor: public Object {
+public:
+    Floor();
+    void draw();
 };
 
 
