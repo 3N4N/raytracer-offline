@@ -177,6 +177,7 @@ void Sphere::draw()
 }
 
 
+// https://viclw17.github.io/2018/07/16/raytracing-ray-sphere-intersection/
 double Sphere::intersect_param(Ray r)
 {
     // std::cout << r.src << r.dir << "\n";
@@ -244,11 +245,37 @@ void Triangle::draw()
     } glEnd();
 }
 
+// https://www.lighthouse3d.com/tutorials/maths/ray-triangle-intersection/
 double Triangle::intersect_param(Ray r)
 {
+    double t;
+
     vec3 side1 = b - a;
     vec3 side2 = c - a;
-    vec3 hor = r.dir.cross(side2);
+
+    vec3 _h = r.dir.cross(side2);
+    double _a = _h.dot(side1);
+
+    if (abs(_a) < 0.00001) return -1;
+
+    vec3 _d = r.src - a;
+    double _f = 1/_a;
+    double _u = _f * _d.dot(_h);
+
+    if (_u < 0.0 || _u > 1.0) return -1;
+
+    vec3 _q = _d.cross(side1);
+    double _v = _f * _q.dot(r.dir);
+
+    if (_v < 0.0 || _u + _v > 1.0) return -1;
+
+    t = _f * side2.dot(_q);
+
+    if (t <= 0.00001) {
+        return -1;
+    }
+
+    return t;
 }
 
 // Color Triangle::intersect(Ray r, int lvl) { }
