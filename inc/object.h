@@ -3,12 +3,35 @@
 
 #include <GL/glut.h>
 #include <cmath>
+#include <vector>
 #include "vector.h"
+#include "color.h"
+#include "light.h"
+
+class Object;
+
+extern std::vector<Light> lights;
+extern std::vector<Object *> objects;
+
+class Ray {
+public:
+    vec3 src;
+    vec3 dir;
+    double t;
+    Color color;
+
+    Ray() { }
+    Ray(vec3 src, vec3 dir);
+    Ray(double srcX, double srcY, double srcZ,
+        double dirX, double dirY, double dirZ);
+    void setT(double t);
+    void setColor(Color c);
+};
 
 
 class Object {
 public:
-    double color[3];
+    Color color;
     double coeff[4]; // reflection coefficients
     int shine; // exponent term of specular component
 
@@ -18,14 +41,19 @@ public:
            double specular, double recursive);
     ~Object();
     virtual void draw() = 0;
+    virtual double intersect_param(Ray r) = 0;
+    Color illuminate(const Ray r, vec3 ip, double t, int lvl);
+    virtual vec3 get_normal(vec3 ip) = 0;
+    Color intersect(Ray r, int lvl = 0);
     void setColor(double, double, double);
     void setShine(int);
     void setCoeff(double, double, double, double);
+    Color getColorAt(vec3 &p);
 };
 
 class Sphere: public Object {
 public:
-    vector3d center;
+    vec3 center;
     double radius;
 
     Sphere(): Object() { }
@@ -33,16 +61,19 @@ public:
            double r, double g, double b,
            int shine, double ambient, double diffuse,
            double specular, double recursive);
-    Sphere(vector3d center, double radius,
+    Sphere(vec3 center, double radius,
            double r, double g, double b,
            int shine, double ambient, double diffuse,
            double specular, double recursive);
     void draw();
+    double intersect_param(Ray r);
+    // Color intersect(Ray r, int lvl = 0);
+    vec3 get_normal(vec3 ip);
 };
 
 class Triangle: public Object {
 public:
-    vector3d p1, p2, p3;
+    vec3 a, b, c;
 
     Triangle(): Object() { }
     Triangle(double x1, double y1, double z1,
@@ -52,6 +83,9 @@ public:
              int shine, double ambient, double diffuse,
              double specular, double recursive);
     void draw();
+    double intersect_param(Ray r);
+    // Color intersect(Ray r, int lvl = 0);
+    vec3 get_normal(vec3 ip);
 };
 
 class Floor: public Object {
@@ -61,6 +95,9 @@ public:
     Floor();
     Floor(int floor_width, int tile_width);
     void draw();
+    double intersect_param(Ray r);
+    // Color intersect(Ray r, int lvl = 0);
+    vec3 get_normal(vec3 ip);
 };
 
 
