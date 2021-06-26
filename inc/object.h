@@ -17,15 +17,11 @@ class Ray {
 public:
     vec3 src;
     vec3 dir;
-    double t;
-    Color color;
 
     Ray() { }
     Ray(vec3 src, vec3 dir);
     Ray(double srcX, double srcY, double srcZ,
         double dirX, double dirY, double dirZ);
-    void setT(double t);
-    void setColor(Color c);
 };
 
 

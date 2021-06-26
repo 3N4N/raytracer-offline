@@ -3,6 +3,7 @@
 
 #define pi (2*acos(0.0))
 
+
 /****************************************************************************
  ******************************** Class Ray *********************************
  ****************************************************************************/
@@ -16,15 +17,8 @@ Ray::Ray(double srcX, double srcY, double srcZ,
     src(vec3(srcX,srcY,srcZ)),
     dir(vec3(dirX,dirY,dirZ)) { }
 
-void Ray::setT(double t)
-{
-    this->t = t;
-}
 
-void Ray::setColor(Color c)
-{
-    color = c;
-}
+
 
 /****************************************************************************
  ******************************* Class Object *******************************
@@ -112,6 +106,7 @@ Color Object::intersect(Ray r, int lvl)
 
     return col;
 }
+
 
 
 
@@ -209,7 +204,6 @@ double Sphere::intersect_param(Ray r)
     }
 }
 
-
 vec3 Sphere::get_normal(vec3 ip)
 {
     vec3 ret;
@@ -217,6 +211,8 @@ vec3 Sphere::get_normal(vec3 ip)
     ret.normalize();
     return ret;
 }
+
+
 
 
 /****************************************************************************
@@ -233,9 +229,9 @@ Triangle::Triangle(double x1, double y1, double z1,
     Object(r, g, b, shine, ambient, diffuse, specular, recursive),
     a(vec3(x1,y1,z1)), b(vec3(x2,y2,z2)), c(vec3(x3,y3,z3)) { }
 
+// https://stackoverflow.com/a/43495719/11135136
 void Triangle::draw()
 {
-    // https://stackoverflow.com/a/43495719/11135136
 
     glBegin(GL_TRIANGLES); {
         glColor3f(color.r, color.g, color.b);
@@ -302,9 +298,10 @@ Floor::Floor(int floor_width, int tile_width)
     Object(0,0,0, 0, 0.3,0.3,0.0,0.3),
     floor_width(floor_width), tile_width(tile_width) { }
 
+
+// https://community.khronos.org/t/draw-a-checker-floor/54183/4
 void Floor::draw()
 {
-    // https://community.khronos.org/t/draw-a-checker-floor/54183/4
 
     glBegin(GL_QUADS); {
         for (int i = -floor_width/2; i < floor_width/2; i++) {
