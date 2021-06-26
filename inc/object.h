@@ -36,15 +36,14 @@ public:
            double ambient, double diffuse,
            double specular, double recursive);
     ~Object();
-    virtual void draw() = 0;
+    virtual void draw() const = 0;
     virtual double intersect_param(Ray r) = 0;
-    Color illuminate(const Ray r, vec3 ip, double t, int lvl);
     virtual vec3 get_normal(vec3 ip) = 0;
     Color intersect(Ray r, int lvl = 0);
     void setColor(double, double, double);
     void setShine(int);
     void setCoeff(double, double, double, double);
-    Color getColorAt(vec3 &p);
+    virtual Color getColorAt(vec3 &p);
 };
 
 class Sphere: public Object {
@@ -61,10 +60,10 @@ public:
            double r, double g, double b,
            int shine, double ambient, double diffuse,
            double specular, double recursive);
-    void draw() const;
-    double intersect_param(Ray r);
+    void draw() const override;
+    double intersect_param(Ray r) override;
     // Color intersect(Ray r, int lvl = 0);
-    vec3 get_normal(vec3 ip);
+    vec3 get_normal(vec3 ip) override;
 };
 
 class Triangle: public Object {
@@ -78,22 +77,25 @@ public:
              double r, double g, double b,
              int shine, double ambient, double diffuse,
              double specular, double recursive);
-    void draw() const;
-    double intersect_param(Ray r);
+    void draw() const override;
+    double intersect_param(Ray r) override;
     // Color intersect(Ray r, int lvl = 0);
-    vec3 get_normal(vec3 ip);
+    vec3 get_normal(vec3 ip) override;
 };
 
 class Floor: public Object {
 public:
-    int floor_width, tile_width;
+    vec3 ref;
+    double len;
+    double size;
 
     Floor();
     Floor(int floor_width, int tile_width);
-    void draw() const;
-    double intersect_param(Ray r);
+    void draw() const override;
+    double intersect_param(Ray r) override;
     // Color intersect(Ray r, int lvl = 0);
-    vec3 get_normal(vec3 ip);
+    vec3 get_normal(vec3 ip) override;
+    Color getColorAt(vec3 &p) override;
 };
 
 

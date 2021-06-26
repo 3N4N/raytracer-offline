@@ -68,10 +68,11 @@ Color Object::intersect(Ray r, int lvl)
     // std::cout << r.src << r.dir << "\n";
     double t = intersect_param(r);
 
-    Color col = color * coeff[0];
-
     vec3 ip = r.src + r.dir*t;
     vec3 norm = get_normal(ip);
+
+    // Color col = color * coeff[0];
+    Color col = getColorAt(ip) * coeff[0];
 
     for (Light &light : lights) {
         Ray lightray(light.pos, (ip - light.pos).normalize());
@@ -252,7 +253,7 @@ double Triangle::intersect_param(Ray r)
     vec3 _h = r.dir.cross(side2);
     double _a = _h.dot(side1);
 
-    if (abs(_a) < 0.00001) return -1;
+    if (abs(_a) < 1e-5) return -1;
 
     vec3 _d = r.src - a;
     double _f = 1/_a;
@@ -295,8 +296,9 @@ Floor::Floor() : Object(0,0,0, 0, 0.3,0.3,0.0,0.3) { }
 
 Floor::Floor(int floor_width, int tile_width)
     :
-    Object(0,0,0, 0, 0.3,0.3,0.0,0.3),
-    floor_width(floor_width), tile_width(tile_width) { }
+    Object(1,0,0, 5, 0.4,0.2,0.2,0.2),
+    len(tile_width), size(floor_width),
+    ref(vec3(-floor_width/2, -floor_width/2, 0)) { }
 
 
 // https://community.khronos.org/t/draw-a-checker-floor/54183/4
@@ -304,26 +306,51 @@ void Floor::draw() const
 {
 
     glBegin(GL_QUADS); {
-        for (int i = -floor_width/2; i < floor_width/2; i++) {
-            for (int j = -floor_width/2; j < floor_width/2; j++) {
+        for (int i = -size/2; i < size/2; i++) {
+            for (int j = -size/2; j < size/2; j++) {
                 if ((i + j) % 2 == 0) glColor3f(1, 1, 1);
                 else glColor3f(0, 0, 0);
 
-                glVertex3f(i*tile_width,        j*tile_width,       0);
-                glVertex3f((i+1)*tile_width,    j*tile_width,       0);
-                glVertex3f((i+1)*tile_width,    (j+1)*tile_width,   0);
-                glVertex3f(i*tile_width,        (j+1)*tile_width,   0);
+                glVertex3f(i*len,       j*len,      0);
+                glVertex3f((i+1)*len,   j*len,      0);
+                glVertex3f((i+1)*len,   (j+1)*len,  0);
+                glVertex3f(i*len,       (j+1)*len,  0);
             }
         }
     } glEnd();
 }
 
-double Floor::intersect_param(Ray r) { }
+double Floor::intersect_param(Ray r)
+{
+    vec3 center(0,0,0);
+    vec3 normal(0,0,1);
+
+    double denom = normal.dot(r.dir);
+
+    double t = -1;
+    if(abs(denom) > 1e-5) {
+        t = ((center - r.src).dot(normal)) / denom;
+        // std::cout << t << "\n";
+    }
+    return t;
+}
 // Color Floor::intersect(Ray r, int lvl) { }
 
 vec3 Floor::get_normal(vec3 ip)
 {
     return vec3(0, 0, 1);
+}
+
+Color Floor::getColorAt(vec3 &p)
+{
+    if (abs(p.x) > size*len/2 || abs(p.y) > size*len/2)
+        return Color(0,0,0);
+
+    int dx = (abs(p.x) / len) + (p.x < 0);
+    int dy = (abs(p.y) / len) + (p.y < 0);
+
+    if (dx%2 == dy%2) return Color(1,1,1);
+    return Color(0,0,0);
 }
 
 
