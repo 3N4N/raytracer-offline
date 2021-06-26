@@ -61,7 +61,7 @@ public:
            double r, double g, double b,
            int shine, double ambient, double diffuse,
            double specular, double recursive);
-    void draw();
+    void draw() const;
     double intersect_param(Ray r);
     // Color intersect(Ray r, int lvl = 0);
     vec3 get_normal(vec3 ip);
@@ -78,7 +78,7 @@ public:
              double r, double g, double b,
              int shine, double ambient, double diffuse,
              double specular, double recursive);
-    void draw();
+    void draw() const;
     double intersect_param(Ray r);
     // Color intersect(Ray r, int lvl = 0);
     vec3 get_normal(vec3 ip);
@@ -90,7 +90,7 @@ public:
 
     Floor();
     Floor(int floor_width, int tile_width);
-    void draw();
+    void draw() const;
     double intersect_param(Ray r);
     // Color intersect(Ray r, int lvl = 0);
     vec3 get_normal(vec3 ip);

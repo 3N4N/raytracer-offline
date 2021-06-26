@@ -129,7 +129,7 @@ Sphere::Sphere(vec3 center, double radius,
     : Sphere(center.x, center.y, center.z, radius, r, g, b,
              shine, ambient, diffuse, specular, recursive) { }
 
-void Sphere::draw()
+void Sphere::draw() const
 {
     glPushMatrix();
     glTranslated(center.x, center.y, center.z);
@@ -230,7 +230,7 @@ Triangle::Triangle(double x1, double y1, double z1,
     a(vec3(x1,y1,z1)), b(vec3(x2,y2,z2)), c(vec3(x3,y3,z3)) { }
 
 // https://stackoverflow.com/a/43495719/11135136
-void Triangle::draw()
+void Triangle::draw() const
 {
 
     glBegin(GL_TRIANGLES); {
@@ -300,7 +300,7 @@ Floor::Floor(int floor_width, int tile_width)
 
 
 // https://community.khronos.org/t/draw-a-checker-floor/54183/4
-void Floor::draw()
+void Floor::draw() const
 {
 
     glBegin(GL_QUADS); {
