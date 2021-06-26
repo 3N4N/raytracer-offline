@@ -1,23 +1,66 @@
 #include "vector.h"
+#include <cmath>
 
 
-double dot_product(vector2d a, vector2d b)
+vec3 vec3::cross(const vec3 &o) const
 {
-    return a.x * b.x + a.y * b.y;
-}
+    vec3 prod;
 
-vector3d cross_product(vector3d a, vector3d b)
-{
-    vector3d prod;
-
-    prod.x = a.y * b.z - b.y * a.z;
-    prod.y = a.z * b.x - b.z * a.x;
-    prod.z = a.x * b.y - b.x * a.y;
+    prod.x = y * o.z - o.y * z;
+    prod.y = z * o.x - o.z * x;
+    prod.z = x * o.y - o.x * y;
 
     return prod;
 }
 
-double dot_product(vector3d a, vector3d b)
+double vec3::dot(const vec3 &o) const
 {
-    return a.x * b.x + a.y * b.y + a.z * b.z;
+    return x * o.x + y * o.y + z * o.z;
+}
+
+vec3 vec3::normalize()
+{
+    double r = sqrt(x * x + y * y + z * z);
+    x /= r;
+    y /= r;
+    z /= r;
+    return *this;
+}
+
+double vec3::magnitude() const
+{
+    return sqrt(x * x + y * y + z * z);
+}
+
+vec3 vec3::operator+(const vec3 &o) const
+{
+    return vec3(x+o.x, y+o.y, z+o.z);
+}
+
+vec3 vec3::operator-(const vec3 &o) const
+{
+    return vec3(x-o.x, y-o.y, z-o.z);
+}
+
+
+vec3 vec3::operator*(double m) const
+{
+    return vec3(x*m, y*m, z*m);
+}
+
+vec3 vec3::operator/(double d) const
+{
+    return vec3(x/d, y/d, z/d);
+}
+
+std::ostream &operator<<(std::ostream &os, const vec3 &v)
+{
+    os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+    return os;
+}
+
+std::istream &operator>>(std::istream &is, vec3 &v)
+{
+    is >> v.x >> v.y >> v.z;
+    return is;
 }
