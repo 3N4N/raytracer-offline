@@ -1,5 +1,6 @@
 #include "object.h"
 #include <iostream>
+#include <cfloat>
 
 #define pi (2*acos(0.0))
 
@@ -71,7 +72,6 @@ Color Object::intersect(Ray r, int lvl)
     vec3 ip = r.src + r.dir*t;
     vec3 norm = get_normal(ip);
 
-    // Color col = color * coeff[0];
     Color col = getColorAt(ip) * coeff[0];
 
     for (Light &light : lights) {
@@ -104,6 +104,24 @@ Color Object::intersect(Ray r, int lvl)
         col += light.color * col * coeff[2] * pow(abs(phong), shine);
         // std::cout << col << "\n";
     }
+
+    if (lvl >= recursion_depth) return col;
+
+    vec3 _rdir = r.dir - norm * (2 * r.dir.dot(norm));
+    Ray _r(ip + _rdir * 1, _rdir);
+
+    Object *nearest = nullptr;
+    int t_min = DBL_MAX;
+    for (auto &obj : objects) {
+        int t = obj->intersect_param(_r);
+        // std::cout << t << "\n";
+        if (t > 0 && t < t_min) {
+            nearest = obj;
+            t_min = t;
+        }
+    }
+
+    col += intersect(_r, lvl+1) * coeff[3];
 
     return col;
 }

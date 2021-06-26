@@ -10,6 +10,7 @@
 
 class Object;
 
+extern int recursion_depth;
 extern std::vector<Light> lights;
 extern std::vector<Object *> objects;
 
