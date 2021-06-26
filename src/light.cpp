@@ -1,4 +1,5 @@
 #include "light.h"
+#include <GL/glut.h>
 
 Light::Light(double x, double y, double z,
              double r, double g, double b)
@@ -21,5 +22,12 @@ void Light::setColor(double r, double g, double b)
     color.b = b;
 }
 
-void Light::draw() { }
+void Light::draw() const
+{
+    glPointSize(5);
+    glColor3f(color.r , color.g , color.b);
+    glBegin(GL_POINTS);
+    glVertex3f(pos.x , pos.y , pos.z);
+    glEnd();
+}
 

@@ -16,7 +16,7 @@ public:
     ~Light() { }
     void setPosition(double x, double y, double z);
     void setColor(double r, double g, double b);
-    void draw();
+    void draw() const;
 };
 
 

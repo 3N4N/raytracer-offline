@@ -312,6 +312,7 @@ void display()
     ****************************/
 
     for (const auto &object : objects) object->draw();
+    for (const auto &light : lights) light.draw();
 
 
     // ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
