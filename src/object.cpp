@@ -108,6 +108,7 @@ Color Object::intersect(Ray r, int lvl)
     if (lvl >= recursion_depth) return col;
 
     vec3 _rdir = r.dir - norm * (2 * r.dir.dot(norm));
+    _rdir.normalize();
     Ray _r(ip + _rdir * 1, _rdir);
 
     Object *nearest = nullptr;
@@ -121,7 +122,8 @@ Color Object::intersect(Ray r, int lvl)
         }
     }
 
-    col += intersect(_r, lvl+1) * coeff[3];
+    if (nearest != nullptr)
+        col += nearest->intersect(_r, lvl+1) * coeff[3];
 
     return col;
 }
@@ -348,7 +350,9 @@ double Floor::intersect_param(Ray r)
     double t = -1;
     if(abs(denom) > 1e-5) {
         t = ((center - r.src).dot(normal)) / denom;
-        // std::cout << t << "\n";
+        vec3 ip = r.src + r.dir*t;
+        if (abs(ip.x) > size*len/2 || abs(ip.y) > size*len/2)
+            t = -1;
     }
     return t;
 }
@@ -361,9 +365,6 @@ vec3 Floor::get_normal(vec3 ip)
 
 Color Floor::getColorAt(vec3 &p)
 {
-    if (abs(p.x) > size*len/2 || abs(p.y) > size*len/2)
-        return Color(0,0,0);
-
     int dx = (abs(p.x) / len) + (p.x < 0);
     int dy = (abs(p.y) / len) + (p.y < 0);
 

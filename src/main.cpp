@@ -9,7 +9,7 @@
 #include "bitmap_image.h"
 
 #define pi (2*acos(0.0))
-#define ROTSPEED 0.8
+#define ROTSPEED 1.5
 #define MOVSPEED 3
 
 std::vector<Light> lights;
