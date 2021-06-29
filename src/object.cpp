@@ -439,7 +439,28 @@ double General::intersect_param(Ray r)
     // t1 = (-Bq + (Bq2 - 4AqCq)^0.5) / 2Aq
     double t0 = (-bq - sqrt(discriminant)) / (2*aq);
     double t1 = (-bq + sqrt(discriminant)) / (2*aq);
-    double t = -1;
+
+    double t = -1.0;
+    if (t0 < 0.0 && t1 < 0.0) return -1.0;
+    if (t0 >= 0 && t1 >= 0) {
+        vec3 dist0 = r.src + r.dir*t0 - center;
+        vec3 dist1 = r.src + r.dir*t1 - center;
+
+        char t0_still_in = 1;
+        char t1_still_in = 1;
+
+        if ((length > 0) && t0_still_in && (abs(dist0.x) > length)) t0_still_in = 0;
+        if ((length > 0) && t1_still_in && (abs(dist1.x) > length)) t1_still_in = 0;
+        if ((width > 0)  && t0_still_in && (abs(dist0.y) > width))  t0_still_in = 0;
+        if ((width > 0)  && t1_still_in && (abs(dist1.y) > width))  t1_still_in = 0;
+        if ((height > 0) && t0_still_in && (abs(dist0.z) > height)) t0_still_in = 0;
+        if ((height > 0) && t1_still_in && (abs(dist1.z) > height)) t1_still_in = 0;
+
+        if (t0_still_in && t1_still_in) return std::min(t0, t1);
+        if (t0_still_in && !t1_still_in) return t0;
+        if (!t0_still_in && t1_still_in) return t1;
+        return -1;
+    }
     if (t0 > 0.0) return t0;
     return t1;
 }
