@@ -109,9 +109,15 @@ void loadData()
             int shine;
 
             scenefile >> a >> b >> c >> d >> e >> f >> g >> h >> i >> j;
+            scenefile >> x >> y >> z;
+            scenefile >> length >> width >> height;
             scenefile >> R >> G >> B;
             scenefile >> ambient >> diffuse >> specular >> recursive;
             scenefile >> shine;
+
+            obj = new General(a,b,c,d,e,f,g,h,i,j, x,y,z, length, width, height,
+                              R,G,B, shine, ambient,diffuse,specular,recursive);
+            objects.push_back(obj);
         }
     }
 

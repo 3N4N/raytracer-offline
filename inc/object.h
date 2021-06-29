@@ -99,5 +99,23 @@ public:
     Color getColorAt(vec3 &p) override;
 };
 
+class General: public Object {
+public:
+    double a, b, c, d, e, f, g, h, i, j;
+    vec3 center;
+    double length, width, height;
+
+    General(double a, double b, double c, double d, double e,
+            double f, double g, double h, double i, double j,
+            double x, double y, double z,
+            double length, double width, double height,
+            double R, double G, double B,
+            int shine, double ambient, double diffuse,
+            double specular, double recursive);
+    void draw() const override;
+    double intersect_param(Ray r) override;
+    // Color intersect(Ray r, int lvl = 0);
+    vec3 get_normal(vec3 ip) override;
+};
 
 #endif // _OBJECTS_H_

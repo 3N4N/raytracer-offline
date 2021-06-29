@@ -72,6 +72,10 @@ Color Object::intersect(Ray r, int lvl)
     vec3 ip = r.src + r.dir*t;
     vec3 norm = get_normal(ip);
 
+    if (norm.dot(r.dir) > 0) {
+        norm = norm * -1.0;
+    }
+
     Color col = getColorAt(ip) * coeff[0];
 
     for (Light &light : lights) {
@@ -370,6 +374,88 @@ Color Floor::getColorAt(vec3 &p)
 
     if (dx%2 == dy%2) return Color(1,1,1);
     return Color(0,0,0);
+}
+
+
+
+/****************************************************************************
+ ******************************* Class General ********************************
+ ****************************************************************************/
+
+
+General::General(double a, double b, double c, double d, double e,
+                 double f, double g, double h, double i, double j,
+                 double x, double y, double z,
+                 double length, double width, double height,
+                 double R, double G, double B,
+                 int shine, double ambient, double diffuse,
+                 double specular, double recursive)
+    :
+    Object(R, G, B, shine, ambient, diffuse, specular, recursive),
+    center(vec3(x,y,z)), length(length), width(width), height(height),
+    a(a), b(b), c(c), d(d), e(e), f(f), g(g), h(h), i(i), j(j) { }
+
+
+void General::draw() const { }
+
+// http://skuld.bmsc.washington.edu/people/merritt/graphics/quadrics.html?fbclid=IwAR0egCMBVaL6LOiVaPEuAYSWUWjujxFnQVBS7bqZq_lmhQYOo6XYyovDMf4
+double General::intersect_param(Ray r)
+{
+    double xo = r.src.x;
+    double yo = r.src.y;
+    double zo = r.src.z;
+
+    double xd = r.dir.x;
+    double yd = r.dir.y;
+    double zd = r.dir.z;
+
+    // Aq = Axd2 + Byd2 + Czd2 + Dxdyd + Exdzd + Fydzd
+    // Bq = 2*Axoxd + 2*Byoyd + 2*Czozd
+    //      + D(xoyd + yoxd) + E(xozd + zoxd) + F(yozd + ydzo)
+    //      + Gxd + Hyd + Izd
+    // Cq = Axo2 + Byo2 + Czo2
+    //      + Dxoyo + Exozo + Fyozo
+    //      + Gxo + Hyo + Izo + J
+
+    double aq = a*xd*xd + b*yd*yd + c*zd*zd + d*xd*yd + e*xd*zd + f*yd*zd;
+    double bq = 2*a*xo*xd + 2*b*yo*yd + 2*c*zo*zd
+        + d*(xo*yd+yo*xd) + e*(xo*zd+zo*xd) + f*(yo*zd+zo*yd)
+        + g*xd + h*yd + i*zd;
+    double cq = a*xo*xo + b*yo*yo + c*zo*zo
+        + d*xo*yo + e*xo*zo + f*yo*zo
+        + g*xo + h*yo + i*zo + j;
+
+    // 1. Check Aq = 0 (If Aq = 0 then t = -Cq / Bq)
+    // 2. If Aq <> 0, then check the discriminant.
+    //    If (Bq2 - 4AqCq ) <0.0 then there is no intersection
+    // 3. Compute t0 and if t0 > 0 then done else compute t1
+    // 4. Once t is found compute Ri = (xi yi zi)
+
+    if (aq == 0) return -cq/bq;
+    double discriminant = bq*bq - 4*aq*cq;
+    if (discriminant < 0.0) return -1.0;
+
+    // t0 = (-Bq - (Bq2 - 4AqCq)^0.5) / 2Aq
+    // t1 = (-Bq + (Bq2 - 4AqCq)^0.5) / 2Aq
+    double t0 = (-bq - sqrt(discriminant)) / (2*aq);
+    double t1 = (-bq + sqrt(discriminant)) / (2*aq);
+    double t = -1;
+    if (t0 > 0.0) return t0;
+    return t1;
+}
+
+// Color General::intersect(Ray r, int lvl) { }
+
+vec3 General::get_normal(vec3 ip)
+{
+    double x = ip.x;
+    double y = ip.y;
+    double z = ip.z;
+
+    vec3 n(2*a*x+d*y+e*z+g, 2*b*y+d*x+f*z+h, 2*c*z+e*x+f*y+i);
+    n.normalize();
+
+    return n;
 }
 
 
