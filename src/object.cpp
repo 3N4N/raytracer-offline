@@ -1,5 +1,6 @@
 #include "object.h"
 #include <iostream>
+#include <cfloat>
 
 #define pi (2*acos(0.0))
 
@@ -68,10 +69,14 @@ Color Object::intersect(Ray r, int lvl)
     // std::cout << r.src << r.dir << "\n";
     double t = intersect_param(r);
 
-    Color col = color * coeff[0];
-
     vec3 ip = r.src + r.dir*t;
     vec3 norm = get_normal(ip);
+
+    if (norm.dot(r.dir) > 0) {
+        norm = norm * -1.0;
+    }
+
+    Color col = getColorAt(ip) * coeff[0];
 
     for (Light &light : lights) {
         Ray lightray(light.pos, (ip - light.pos).normalize());
@@ -103,6 +108,26 @@ Color Object::intersect(Ray r, int lvl)
         col += light.color * col * coeff[2] * pow(abs(phong), shine);
         // std::cout << col << "\n";
     }
+
+    if (lvl >= recursion_depth) return col;
+
+    vec3 _rdir = r.dir - norm * (2 * r.dir.dot(norm));
+    _rdir.normalize();
+    Ray _r(ip + _rdir * 1, _rdir);
+
+    Object *nearest = nullptr;
+    int t_min = DBL_MAX;
+    for (auto &obj : objects) {
+        int t = obj->intersect_param(_r);
+        // std::cout << t << "\n";
+        if (t > 0 && t < t_min) {
+            nearest = obj;
+            t_min = t;
+        }
+    }
+
+    if (nearest != nullptr)
+        col += nearest->intersect(_r, lvl+1) * coeff[3];
 
     return col;
 }
@@ -252,7 +277,7 @@ double Triangle::intersect_param(Ray r)
     vec3 _h = r.dir.cross(side2);
     double _a = _h.dot(side1);
 
-    if (abs(_a) < 0.00001) return -1;
+    if (abs(_a) < 1e-5) return -1;
 
     vec3 _d = r.src - a;
     double _f = 1/_a;
@@ -295,8 +320,9 @@ Floor::Floor() : Object(0,0,0, 0, 0.3,0.3,0.0,0.3) { }
 
 Floor::Floor(int floor_width, int tile_width)
     :
-    Object(0,0,0, 0, 0.3,0.3,0.0,0.3),
-    floor_width(floor_width), tile_width(tile_width) { }
+    Object(1,0,0, 5, 0.4,0.2,0.2,0.2),
+    len(tile_width), size(floor_width),
+    ref(vec3(-floor_width/2, -floor_width/2, 0)) { }
 
 
 // https://community.khronos.org/t/draw-a-checker-floor/54183/4
@@ -304,26 +330,153 @@ void Floor::draw() const
 {
 
     glBegin(GL_QUADS); {
-        for (int i = -floor_width/2; i < floor_width/2; i++) {
-            for (int j = -floor_width/2; j < floor_width/2; j++) {
+        for (int i = -size/2; i < size/2; i++) {
+            for (int j = -size/2; j < size/2; j++) {
                 if ((i + j) % 2 == 0) glColor3f(1, 1, 1);
                 else glColor3f(0, 0, 0);
 
-                glVertex3f(i*tile_width,        j*tile_width,       0);
-                glVertex3f((i+1)*tile_width,    j*tile_width,       0);
-                glVertex3f((i+1)*tile_width,    (j+1)*tile_width,   0);
-                glVertex3f(i*tile_width,        (j+1)*tile_width,   0);
+                glVertex3f(i*len,       j*len,      0);
+                glVertex3f((i+1)*len,   j*len,      0);
+                glVertex3f((i+1)*len,   (j+1)*len,  0);
+                glVertex3f(i*len,       (j+1)*len,  0);
             }
         }
     } glEnd();
 }
 
-double Floor::intersect_param(Ray r) { }
+double Floor::intersect_param(Ray r)
+{
+    vec3 center(0,0,0);
+    vec3 normal(0,0,1);
+
+    double denom = normal.dot(r.dir);
+
+    double t = -1;
+    if(abs(denom) > 1e-5) {
+        t = ((center - r.src).dot(normal)) / denom;
+        vec3 ip = r.src + r.dir*t;
+        if (abs(ip.x) > size*len/2 || abs(ip.y) > size*len/2)
+            t = -1;
+    }
+    return t;
+}
 // Color Floor::intersect(Ray r, int lvl) { }
 
 vec3 Floor::get_normal(vec3 ip)
 {
     return vec3(0, 0, 1);
+}
+
+Color Floor::getColorAt(vec3 &p)
+{
+    int dx = (abs(p.x) / len) + (p.x < 0);
+    int dy = (abs(p.y) / len) + (p.y < 0);
+
+    if (dx%2 == dy%2) return Color(1,1,1);
+    return Color(0,0,0);
+}
+
+
+
+/****************************************************************************
+ ******************************* Class General ********************************
+ ****************************************************************************/
+
+
+General::General(double a, double b, double c, double d, double e,
+                 double f, double g, double h, double i, double j,
+                 double x, double y, double z,
+                 double length, double width, double height,
+                 double R, double G, double B,
+                 int shine, double ambient, double diffuse,
+                 double specular, double recursive)
+    :
+    Object(R, G, B, shine, ambient, diffuse, specular, recursive),
+    center(vec3(x,y,z)), length(length), width(width), height(height),
+    a(a), b(b), c(c), d(d), e(e), f(f), g(g), h(h), i(i), j(j) { }
+
+
+void General::draw() const { }
+
+// http://skuld.bmsc.washington.edu/people/merritt/graphics/quadrics.html?fbclid=IwAR0egCMBVaL6LOiVaPEuAYSWUWjujxFnQVBS7bqZq_lmhQYOo6XYyovDMf4
+double General::intersect_param(Ray r)
+{
+    double xo = r.src.x;
+    double yo = r.src.y;
+    double zo = r.src.z;
+
+    double xd = r.dir.x;
+    double yd = r.dir.y;
+    double zd = r.dir.z;
+
+    // Aq = Axd2 + Byd2 + Czd2 + Dxdyd + Exdzd + Fydzd
+    // Bq = 2*Axoxd + 2*Byoyd + 2*Czozd
+    //      + D(xoyd + yoxd) + E(xozd + zoxd) + F(yozd + ydzo)
+    //      + Gxd + Hyd + Izd
+    // Cq = Axo2 + Byo2 + Czo2
+    //      + Dxoyo + Exozo + Fyozo
+    //      + Gxo + Hyo + Izo + J
+
+    double aq = a*xd*xd + b*yd*yd + c*zd*zd + d*xd*yd + e*xd*zd + f*yd*zd;
+    double bq = 2*a*xo*xd + 2*b*yo*yd + 2*c*zo*zd
+        + d*(xo*yd+yo*xd) + e*(xo*zd+zo*xd) + f*(yo*zd+zo*yd)
+        + g*xd + h*yd + i*zd;
+    double cq = a*xo*xo + b*yo*yo + c*zo*zo
+        + d*xo*yo + e*xo*zo + f*yo*zo
+        + g*xo + h*yo + i*zo + j;
+
+    // 1. Check Aq = 0 (If Aq = 0 then t = -Cq / Bq)
+    // 2. If Aq <> 0, then check the discriminant.
+    //    If (Bq2 - 4AqCq ) <0.0 then there is no intersection
+    // 3. Compute t0 and if t0 > 0 then done else compute t1
+    // 4. Once t is found compute Ri = (xi yi zi)
+
+    if (aq == 0) return -cq/bq;
+    double discriminant = bq*bq - 4*aq*cq;
+    if (discriminant < 0.0) return -1.0;
+
+    // t0 = (-Bq - (Bq2 - 4AqCq)^0.5) / 2Aq
+    // t1 = (-Bq + (Bq2 - 4AqCq)^0.5) / 2Aq
+    double t0 = (-bq - sqrt(discriminant)) / (2*aq);
+    double t1 = (-bq + sqrt(discriminant)) / (2*aq);
+
+    double t = -1.0;
+    if (t0 < 0.0 && t1 < 0.0) return -1.0;
+    if (t0 >= 0 && t1 >= 0) {
+        vec3 dist0 = r.src + r.dir*t0 - center;
+        vec3 dist1 = r.src + r.dir*t1 - center;
+
+        char t0_still_in = 1;
+        char t1_still_in = 1;
+
+        if ((length > 0) && t0_still_in && (abs(dist0.x) > length)) t0_still_in = 0;
+        if ((length > 0) && t1_still_in && (abs(dist1.x) > length)) t1_still_in = 0;
+        if ((width > 0)  && t0_still_in && (abs(dist0.y) > width))  t0_still_in = 0;
+        if ((width > 0)  && t1_still_in && (abs(dist1.y) > width))  t1_still_in = 0;
+        if ((height > 0) && t0_still_in && (abs(dist0.z) > height)) t0_still_in = 0;
+        if ((height > 0) && t1_still_in && (abs(dist1.z) > height)) t1_still_in = 0;
+
+        if (t0_still_in && t1_still_in) return std::min(t0, t1);
+        if (t0_still_in && !t1_still_in) return t0;
+        if (!t0_still_in && t1_still_in) return t1;
+        return -1;
+    }
+    if (t0 > 0.0) return t0;
+    return t1;
+}
+
+// Color General::intersect(Ray r, int lvl) { }
+
+vec3 General::get_normal(vec3 ip)
+{
+    double x = ip.x;
+    double y = ip.y;
+    double z = ip.z;
+
+    vec3 n(2*a*x+d*y+e*z+g, 2*b*y+d*x+f*z+h, 2*c*z+e*x+f*y+i);
+    n.normalize();
+
+    return n;
 }
 
 

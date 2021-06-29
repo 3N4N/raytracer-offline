@@ -9,7 +9,7 @@
 #include "bitmap_image.h"
 
 #define pi (2*acos(0.0))
-#define ROTSPEED 0.8
+#define ROTSPEED 1.5
 #define MOVSPEED 3
 
 std::vector<Light> lights;
@@ -30,7 +30,26 @@ int n_cap;
 vec3 cam_pos;
 vec3 cam_u, cam_l, cam_r;
 
+int drawaxes;
 
+void drawAxes(int drawaxes)
+{
+    if(drawaxes) {
+        glBegin(GL_LINES); {
+            glColor3f(1.0, 0.0, 0.0);
+            glVertex3f( 100,0,0);
+            glVertex3f(-100,0,0);
+
+            glColor3f(0.0, 1.0, 0.0);
+            glVertex3f(0,-100,0);
+            glVertex3f(0, 100,0);
+
+            glColor3f(0.0, 0.0, 1.0);
+            glVertex3f(0,0, 100);
+            glVertex3f(0,0,-100);
+        } glEnd();
+    }
+}
 
 void loadData()
 {
@@ -90,9 +109,15 @@ void loadData()
             int shine;
 
             scenefile >> a >> b >> c >> d >> e >> f >> g >> h >> i >> j;
+            scenefile >> x >> y >> z;
+            scenefile >> length >> width >> height;
             scenefile >> R >> G >> B;
             scenefile >> ambient >> diffuse >> specular >> recursive;
             scenefile >> shine;
+
+            obj = new General(a,b,c,d,e,f,g,h,i,j, x,y,z, length, width, height,
+                              R,G,B, shine, ambient,diffuse,specular,recursive);
+            objects.push_back(obj);
         }
     }
 
@@ -268,6 +293,7 @@ void mouseListener(int button, int state, int x, int y)
     switch(button){
         case GLUT_LEFT_BUTTON:
             if(state == GLUT_DOWN) {
+                drawaxes = 1 - drawaxes;
             }
             break;
 
@@ -311,6 +337,7 @@ void display()
     / Add your objects from here
     ****************************/
 
+    drawAxes(drawaxes);
     for (const auto &object : objects) object->draw();
     for (const auto &light : lights) light.draw();
 
@@ -328,6 +355,8 @@ void animate()
 
 void init()
 {
+    drawaxes = 1;
+
     cam_pos.x = 100;
     cam_pos.y = 100;
     cam_pos.z = 0;
@@ -357,7 +386,7 @@ int main(int argc, char **argv)
     win_ht = 500;
     n_cap = 0;
 
-    // objects.push_back(new Floor(1000, 20));
+    objects.push_back(new Floor(20, 5));
     loadData();
     img_wd = img_ht = img_size;
     // img_wd = img_ht = 768;
