@@ -118,9 +118,9 @@ Color Object::intersect(Ray r, int lvl)
     Ray _r(ip + _rdir * 1, _rdir);
 
     Object *nearest = nullptr;
-    int t_min = DBL_MAX;
+    double t_min = DBL_MAX;
     for (auto &obj : objects) {
-        int t = obj->intersect_param(_r);
+        double t = obj->intersect_param(_r);
         // std::cout << t << "\n";
         if (t > 0 && t < t_min) {
             nearest = obj;
