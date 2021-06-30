@@ -2,7 +2,14 @@
 #include <fstream>
 #include <vector>
 #include <cfloat>
+
+
+#ifdef __linux__
 #include <GL/glut.h>
+#else
+#include <windows.h>
+#include <glut.h>
+#endif
 
 #include "object.h"
 #include "light.h"
