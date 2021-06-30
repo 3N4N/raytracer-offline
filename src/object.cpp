@@ -77,6 +77,7 @@ Color Object::intersect(Ray r, int lvl)
     }
 
     Color col = getColorAt(ip) * coeff[0];
+    col.clip();
 
     for (Light &light : lights) {
         Ray lightray(light.pos, (ip - light.pos).normalize());
@@ -106,6 +107,7 @@ Color Object::intersect(Ray r, int lvl)
 
         col += light.color * col * coeff[1] * lambert;
         col += light.color * col * coeff[2] * pow(abs(phong), shine);
+        col.clip();
         // std::cout << col << "\n";
     }
 
@@ -126,8 +128,10 @@ Color Object::intersect(Ray r, int lvl)
         }
     }
 
-    if (nearest != nullptr)
+    if (nearest != nullptr) {
         col += nearest->intersect(_r, lvl+1) * coeff[3];
+        col.clip();
+    }
 
     return col;
 }
@@ -292,7 +296,7 @@ double Triangle::intersect_param(Ray r)
 
     t = _f * side2.dot(_q);
 
-    if (t <= 0.00001) {
+    if (t <= 1e-5) {
         return -1;
     }
 
