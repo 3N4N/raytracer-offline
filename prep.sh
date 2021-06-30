@@ -19,8 +19,8 @@
 
 rm -rf 1605018/
 mkdir 1605018
-cp inc/bitmap_image.h 1605018/
-cp scene.txt 1605018/
+# cp inc/bitmap_image.h 1605018/bitmap_image.hpp
+# cp scene.txt 1605018/
 
 FILE="1605018/1605018_header.h"
 rm -f "$FILE"
@@ -77,7 +77,7 @@ sed -n -e "1,$LN p" -e "$LN q" "$FN" >> "$FILE"
 sed -i '/#include ".*\.h"/d' "$FILE"
 
 sed -i '1s/^/#include "1605018_header.h"\n/' "$FILE"
-sed -i '1s/^/#include "bitmap_image.h"\n/' "$FILE"
+sed -i '1s/^/#include "bitmap_image.hpp"\n/' "$FILE"
 
 zip -r 1605018.zip 1605018/
 mv 1605018.zip /home/enan/Downloads/
