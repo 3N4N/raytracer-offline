@@ -334,8 +334,8 @@ void Floor::draw() const
 {
 
     glBegin(GL_QUADS); {
-        for (int i = -size/2; i < size/2; i++) {
-            for (int j = -size/2; j < size/2; j++) {
+        for (int i = -(size/len)/2; i < (size/len)/2; i++) {
+            for (int j = -(size/len)/2; j < (size/len)/2; j++) {
                 if ((i + j) % 2 == 0) glColor3f(1, 1, 1);
                 else glColor3f(0, 0, 0);
 
@@ -359,7 +359,7 @@ double Floor::intersect_param(Ray r)
     if(abs(denom) > 1e-5) {
         t = ((center - r.src).dot(normal)) / denom;
         vec3 ip = r.src + r.dir*t;
-        if (abs(ip.x) > size*len/2 || abs(ip.y) > size*len/2)
+        if (abs(ip.x) > size/2 || abs(ip.y) > size/2)
             t = -1;
     }
     return t;
@@ -402,7 +402,7 @@ General::General(double a, double b, double c, double d, double e,
 
 void General::draw() const { }
 
-// http://skuld.bmsc.washington.edu/people/merritt/graphics/quadrics.html?fbclid=IwAR0egCMBVaL6LOiVaPEuAYSWUWjujxFnQVBS7bqZq_lmhQYOo6XYyovDMf4
+// http://skuld.bmsc.washington.edu/people/merritt/graphics/quadrics.html
 double General::intersect_param(Ray r)
 {
     double xo = r.src.x;
