@@ -105,8 +105,8 @@ Color Object::intersect(Ray r, int lvl)
         // std::cout << R << "\n";
         // std::cout << phong << "\n";
 
-        col += light.color * col * coeff[1] * lambert * getColorAt(ip);
-        col += light.color * col * coeff[2] * pow(abs(phong), shine);
+        col += light.color * coeff[1] * std::max(lambert, 0.0) * getColorAt(ip);
+        col += light.color * coeff[2] * std::max(pow(abs(phong), shine), 0.0);
         col.clip();
         // std::cout << col << "\n";
     }

@@ -393,7 +393,7 @@ int main(int argc, char **argv)
     win_ht = 500;
     n_cap = 0;
 
-    objects.push_back(new Floor(500, 50));
+    objects.push_back(new Floor(500, 10));
     loadData();
     img_wd = img_ht = img_size;
     // img_wd = img_ht = 768;
